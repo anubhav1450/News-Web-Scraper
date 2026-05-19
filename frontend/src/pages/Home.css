@@ -220,3 +220,16 @@
 
   color: white;
 }
+.sort-dropdown {
+  padding: 10px 14px;
+
+  border-radius: 8px;
+
+  border: none;
+
+  font-weight: bold;
+
+  cursor: pointer;
+
+  outline: none;
+}

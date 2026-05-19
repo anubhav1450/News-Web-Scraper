@@ -23,6 +23,9 @@ const storySchema = new mongoose.Schema(
     postedAt: {
       type: String,
     },
+    minutesAgo: {
+    type: Number,
+  },
 
     bookmarks: [
       {

@@ -1,9 +1,12 @@
 import "./Home.css";
 
-import { useContext, useEffect, useState } from "react";
+import {
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 import { AuthContext } from "../context/AuthContext";
-
 
 import {
   useNavigate,
@@ -12,19 +15,24 @@ import {
 
 import axios from "axios";
 
+const API_URL =
+  import.meta.env.VITE_API_URL;
+
 function Home() {
 
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout } =
+    useContext(AuthContext);
 
-  const [stories, setStories] = useState([]);
+  const [stories, setStories] =
+    useState([]);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] =
+    useState(false);
+
+  const [sortType, setSortType] =
+    useState("points");
 
   const navigate = useNavigate();
-
-  const [page, setPage] = useState(1);
-
-const [totalPages, setTotalPages] = useState(1);
 
   const handleLogout = () => {
 
@@ -33,31 +41,38 @@ const [totalPages, setTotalPages] = useState(1);
     navigate("/login");
   };
 
- const fetchStories = async (currentPage = 1) => {
+  const fetchStories = async () => {
 
-  try {
+    try {
 
-    const response = await axios.get(
-      `https://hacker-news-scraper-api.onrender.com/api/stories?page=${currentPage}&limit=10`
-    );
+      const response = await axios.get(
+        `${API_URL}/api/stories?sort=${sortType}`
+      );
 
-    setStories(response.data || []);
+      setStories(response.data || []);
 
-    setTotalPages(response.data.totalPages);
+    } catch (error) {
 
-  } catch (error) {
+      console.log(error);
 
-    console.log(error);
+    }
+  };
 
-  }
-};
   const handleRefresh = async () => {
 
     try {
 
       setLoading(true);
 
-      await fetchStories(page);
+      await axios.post(
+        `${API_URL}/api/stories/scrape`
+      );
+
+      setTimeout(() => {
+
+        fetchStories();
+
+      }, 1500);
 
     } catch (error) {
 
@@ -70,9 +85,12 @@ const [totalPages, setTotalPages] = useState(1);
     }
   };
 
-  const handleBookmark = async (storyId) => {
+  const handleBookmark = async (
+    storyId
+  ) => {
 
-    const token = localStorage.getItem("token");
+    const token =
+      localStorage.getItem("token");
 
     if (!token) {
 
@@ -87,16 +105,23 @@ const [totalPages, setTotalPages] = useState(1);
         if (story._id === storyId) {
 
           const alreadyBookmarked =
-            story.bookmarks?.includes(user?.id);
+            story.bookmarks?.includes(
+              user?.id
+            );
 
           return {
             ...story,
 
-            bookmarks: alreadyBookmarked
-              ? story.bookmarks.filter(
-                  (id) => id !== user?.id
-                )
-              : [...story.bookmarks, user?.id],
+            bookmarks:
+              alreadyBookmarked
+                ? story.bookmarks.filter(
+                    (id) =>
+                      id !== user?.id
+                  )
+                : [
+                    ...story.bookmarks,
+                    user?.id,
+                  ],
           };
         }
 
@@ -107,7 +132,7 @@ const [totalPages, setTotalPages] = useState(1);
     try {
 
       await axios.post(
-        `https://hacker-news-scraper-api.onrender.com/api/stories/${storyId}/bookmark`,
+        `${API_URL}/api/stories/${storyId}/bookmark`,
         {},
         {
           headers: {
@@ -120,7 +145,7 @@ const [totalPages, setTotalPages] = useState(1);
 
       console.log(error);
 
-      fetchStories(page);
+      fetchStories();
 
     }
   };
@@ -129,7 +154,7 @@ const [totalPages, setTotalPages] = useState(1);
 
     fetchStories();
 
-  }, []);
+  }, [sortType]);
 
   return (
     <div className="home-container">
@@ -198,6 +223,26 @@ const [totalPages, setTotalPages] = useState(1);
             Top Stories
           </h1>
 
+          <select
+            className="sort-dropdown"
+            value={sortType}
+            onChange={(e) =>
+              setSortType(
+                e.target.value
+              )
+            }
+          >
+
+            <option value="points">
+              Highest Points
+            </option>
+
+            <option value="latest">
+              Latest Stories
+            </option>
+
+          </select>
+
           <button
             className="refresh-button"
             onClick={handleRefresh}
@@ -244,16 +289,22 @@ const [totalPages, setTotalPages] = useState(1);
 
                 <button
                   className={
-                    story.bookmarks?.includes(user?.id)
+                    story.bookmarks?.includes(
+                      user?.id
+                    )
                       ? "bookmark-button active-bookmark"
                       : "bookmark-button"
                   }
                   onClick={() =>
-                    handleBookmark(story._id)
+                    handleBookmark(
+                      story._id
+                    )
                   }
                 >
                   {
-                    story.bookmarks?.includes(user?.id)
+                    story.bookmarks?.includes(
+                      user?.id
+                    )
                       ? "Bookmarked ✓"
                       : "Bookmark +"
                   }
